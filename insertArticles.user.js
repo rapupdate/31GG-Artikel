@@ -62,7 +62,7 @@ var request = false;
                 }
             },1000);
         }
-    },60000)
+    },600000)
     // Your code here...
 })();
 
