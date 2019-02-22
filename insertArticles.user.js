@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Insert DU Artikel 31GG
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  News News News
 // @author       Anis Fencheltee
 // @match        https://31gg-31.tumblr.com/
@@ -12,8 +12,11 @@
 
 (function() {
     'use strict';
-    var link = getArticleLink();
     GM_addStyle('summary{cursor:pointer;}');
+    getArticleLink();
+    window.setInterval(function(){
+        getArticleLink();
+    },60000)
     // Your code here...
 })();
 
@@ -29,15 +32,17 @@ function getArticleLink(){
             for (var i=0; i < docs.length; i++){
                 links.push(docs[i].getElementsByTagName("link")[0].getAttribute('href'));
             }
-            console.log(links);
+            //console.log(links);
             getArticle(links);
         }
     } );
 }
 
 function getArticle(link){
+    if ($("#articleContainer").length){
+        $("#articleContainer").remove();
+    }
     for (var i=0;i<link.length;i++){
-
         GM_xmlhttpRequest ( {
             method:     "GET",
             url:        link[i],
@@ -54,8 +59,8 @@ function getArticle(link){
 
 }
 function createDiv(article){
-    console.log("CreateDiv");
-    console.log(article);
+    //console.log("CreateDiv");
+    //console.log(article);
     var header =  article.getElementsByTagName("h2")[0].getElementsByTagName("a")[0].innerHTML;
     var textTree = article.getElementsByTagName("article")[0];
     var scripts = textTree.getElementsByTagName("script");
@@ -66,7 +71,7 @@ function createDiv(article){
         }
     }
 
-    console.log(textTree)
+    //console.log(textTree)
     for (var j=0;j<remScripts.length;j++){
         var index = remScripts-j;
         textTree.getElementsByTagName("script")[index].remove();
@@ -105,9 +110,9 @@ function createDiv(article){
     container.append(spacer);
 }
 function addButton(){
-    console.log("AddButton")
+    //console.log("AddButton")
     var credit2 = $(".credit2")[0];
-    console.log(credit2)
+    //console.log(credit2)
     var button = document.createElement("button");
     button.id = "toggleArticle";
     button.type = "button";
@@ -118,6 +123,6 @@ function addButton(){
 }
 
 function toggleArticle(){
-    console.log("Click")
+    //console.log("Click")
     $("#articleContainer").toggle();
 }
