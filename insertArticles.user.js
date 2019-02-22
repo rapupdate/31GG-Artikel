@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Insert DU Artikel 31GG
 // @namespace    http://tampermonkey.net/
-// @version      0.9
+// @version      1.0
 // @description  News News News
 // @author       Anis Fencheltee
 // @match        https://31gg-31.tumblr.com/
@@ -18,6 +18,14 @@ var request = false;
     var container1 = document.createElement("div")
     container1.id="articles";
     foo.after(container1);
+    var container = document.createElement("details")
+    container.id="articleContainerDUParent";
+    container.innerHTML += "<summary style='margin-top:20px;margin-bottom:20px'>DeinUpdate Artikel</summary><span id='loadingDU'>DU Artikel werden geladen...</div>"
+    $("#articles").append(container)
+    container = document.createElement("details")
+    container.id="articleContainerMRParent";
+    container.innerHTML += "<summary style='margin-top:20px;margin-bottom:20px'>MyRap Artikel</summary><span id='loadingMR'>MyRap Artikel werden geladen...</div>"
+    $("#articles").append(container)
     'use strict';
     GM_addStyle('summary{cursor:pointer;}');
     getArticleLink("http://www.deinupdate.de/?feed=atom");
@@ -42,6 +50,8 @@ var request = false;
         if (!open){
             $("#articleContainerMR").remove();
             $("#articleContainerDU").remove();
+            $("#loadingMR").show();
+            $("#loadingDU").show();
             getArticleLink("http://www.deinupdate.de/?feed=atom");
             interval = window.setInterval(function(){
                 if(!anfrage){
@@ -102,8 +112,10 @@ var loopArray = function(arr,title) {
                 var add=""
                 if (title=="Deinupdate")add="DU"
                 else add="MR"
-                $("#articleContainer"+add).children().first().show();
-                $("#articleContainer"+add).on("toggle",function(){
+                console.log($("#articleContainer"+add))
+                $("#articleContainer"+add).show();
+                $("#loading"+add).hide();
+                $("#articleContainer"+add+"Parent").on("toggle",function(){
                     if(!this.open){
                         var children = $(this).find(".articleDetails");
                         for (var z = 0; z<children.length; z++){
@@ -177,11 +189,10 @@ function createDiv(article,title){
     //console.log(textTree);
     var container;
     if (!$("#articleContainer"+add).length){
-        container = document.createElement("details")
-        container.id="articleContainer"+add;
-        container.innerHTML += "<summary style='margin-top:20px;margin-bottom:20px;display:none'>"+title.replace(/ .*/,'')+" Artikel</summary>";
-        //container.style = "display:none";
-        var foo = $("#articles");
+        container = document.createElement("div")
+        container.id="articleContainer"+add;        
+        container.style = "display:none";
+        var foo = $("#articleContainer"+add+"Parent");
         foo.append(container);
         //addButton();
     }else{
