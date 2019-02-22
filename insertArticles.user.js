@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Insert DU Artikel 31GG
 // @namespace    http://tampermonkey.net/
-// @version      0.7
+// @version      0.9
 // @description  News News News
 // @author       Anis Fencheltee
 // @match        https://31gg-31.tumblr.com/
@@ -26,21 +26,33 @@ var request = false;
         if(!anfrage){
             getArticleLink("https://myrap.com/feed/atom/");
             clearInterval(interval)
+
         }else{
             console.log("Warte auf Slot")
         }
     },1000);
     window.setInterval(function(){
-        getArticleLink("http://www.deinupdate.de/?feed=atom");
-        interval = window.setInterval(function(){
-            if(!anfrage){
-                getArticleLink("https://myrap.com/feed/atom/");
-                clearInterval(interval)
-            }else{
-                console.log("Warte auf Slot")
-            }
-        },1000);
-    },300000)
+        var open=false;
+        var elements = document.getElementsByClassName("articleDetails");
+        for (var x = 0;x<elements.length;x++){
+            open = elements[x].open;
+            if(open) break;
+        }
+        console.log(open);
+        if (!open){
+            $("#articleContainerMR").remove();
+            $("#articleContainerDU").remove();
+            getArticleLink("http://www.deinupdate.de/?feed=atom");
+            interval = window.setInterval(function(){
+                if(!anfrage){
+                    getArticleLink("https://myrap.com/feed/atom/");
+                    clearInterval(interval)
+                }else{
+                    console.log("Warte auf Slot")
+                }
+            },1000);
+        }
+    },60000)
     // Your code here...
 })();
 
@@ -69,11 +81,9 @@ function getArticleLink(feed){
 function getArticle(link,title){
     if (title=="Deinupdate"){
         if ($("#articleContainerDU").length){
-            $("#articleContainerDU").remove();
         }
     }else{
         if ($("#articleContainerMR").length){
-            $("#articleContainerMR").remove();
         }
     }
     x=0;
@@ -92,8 +102,15 @@ var loopArray = function(arr,title) {
                 var add=""
                 if (title=="Deinupdate")add="DU"
                 else add="MR"
-                console.log($("#articleContainer"+add));
-                $("#articleContainer"+add).children().first().show()
+                $("#articleContainer"+add).children().first().show();
+                $("#articleContainer"+add).on("toggle",function(){
+                    if(!this.open){
+                        var children = $(this).find(".articleDetails");
+                        for (var z = 0; z<children.length; z++){
+                            if(children[z].open)children[z].open=false;
+                        }
+                    }
+                });
             }
         });
     }
