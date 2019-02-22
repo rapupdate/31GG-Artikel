@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Insert DU Artikel 31GG
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  News News News
 // @author       Anis Fencheltee
 // @match        https://31gg-31.tumblr.com/
@@ -15,6 +15,9 @@ var x = 0;
 var anfrage = false;
 var request = false;
 (function() {
+    var container1 = document.createElement("div")
+    container1.id="articles";
+    foo.after(container1);
     'use strict';
     GM_addStyle('summary{cursor:pointer;}');
     getArticleLink("http://www.deinupdate.de/?feed=atom");
@@ -86,6 +89,11 @@ var loopArray = function(arr,title) {
                 loopArray(arr,title);
             }else{
                 anfrage=false;
+                var add=""
+                if (title=="Deinupdate")add="DU"
+                else add="MR"
+                console.log($("#articleContainer"+add));
+                $("#articleContainer"+add).children().first().show()
             }
         });
     }
@@ -154,10 +162,10 @@ function createDiv(article,title){
     if (!$("#articleContainer"+add).length){
         container = document.createElement("details")
         container.id="articleContainer"+add;
-        container.innerHTML += "<summary style='margin-top:20px;margin-bottom:20px'>"+title.replace(/ .*/,'')+" Artikel</summary>";
+        container.innerHTML += "<summary style='margin-top:20px;margin-bottom:20px;display:none'>"+title.replace(/ .*/,'')+" Artikel</summary>";
         //container.style = "display:none";
-        var foo = $("#foo");
-        foo.after(container);
+        var foo = $("#articles");
+        foo.append(container);
         //addButton();
     }else{
         container = $("#articleContainer"+add)
