@@ -40,7 +40,7 @@ var request = false;
                 console.log("Warte auf Slot")
             }
         },1000);
-    },60000)
+    },300000)
     // Your code here...
 })();
 
