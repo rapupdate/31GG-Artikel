@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Insert DU Artikel 31GG
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  News News News
 // @author       Anis Fencheltee
 // @match        https://31gg-31.tumblr.com/
@@ -10,58 +10,113 @@
 //@grant        GM_addStyle
 // ==/UserScript==
 
+var x = 0;
+
+var anfrage = false;
+var request = false;
 (function() {
     'use strict';
     GM_addStyle('summary{cursor:pointer;}');
-    getArticleLink();
+    getArticleLink("http://www.deinupdate.de/?feed=atom");
+    var interval;
+    interval = window.setInterval(function(){
+        if(!anfrage){
+            getArticleLink("https://myrap.com/feed/atom/");
+            clearInterval(interval)
+        }else{
+            console.log("Warte auf Slot")
+        }
+    },1000);
     window.setInterval(function(){
-        getArticleLink();
+        getArticleLink("http://www.deinupdate.de/?feed=atom");
+        interval = window.setInterval(function(){
+            if(!anfrage){
+                getArticleLink("https://myrap.com/feed/atom/");
+                clearInterval(interval)
+            }else{
+                console.log("Warte auf Slot")
+            }
+        },1000);
     },60000)
     // Your code here...
 })();
 
-function getArticleLink(){
+function getArticleLink(feed){
+    anfrage=true;
     GM_xmlhttpRequest ( {
         method:     "GET",
-        url:        "http://www.deinupdate.de/?feed=atom",
+        url:        feed,
         onload:     function (response) {
             var parser = new DOMParser();
             var xmlDoc = parser.parseFromString(response.responseText,"text/xml");
             var links = [];
             var docs = xmlDoc.getElementsByTagName("entry");
+            var title = xmlDoc.getElementsByTagName("title")[0].innerHTML;
+            if (title=="") title="Deinupdate"
+            console.log(title)
             for (var i=0; i < docs.length; i++){
                 links.push(docs[i].getElementsByTagName("link")[0].getAttribute('href'));
             }
-            //console.log(links);
-            getArticle(links);
+            console.log(links);
+            getArticle(links,title);
         }
     } );
 }
 
-function getArticle(link){
-    if ($("#articleContainer").length){
-        $("#articleContainer").remove();
+function getArticle(link,title){
+    if (title=="Deinupdate"){
+        if ($("#articleContainerDU").length){
+            $("#articleContainerDU").remove();
+        }
+    }else{
+        if ($("#articleContainerMR").length){
+            $("#articleContainerMR").remove();
+        }
     }
-    for (var i=0;i<link.length;i++){
+    x=0;
+    loopArray(link,title)
+}
+
+var loopArray = function(arr,title) {
+        customAlert(arr[x],title,function(){
+            // set x to next item
+            x++;
+            // any more items in array? continue loop
+            if(x < arr.length) {
+                loopArray(arr,title);
+            }else{
+                anfrage=false;
+            }
+        });
+    }
+
+    function customAlert(link,title,callback) {
         GM_xmlhttpRequest ( {
             method:     "GET",
-            url:        link[i],
+            url:        link,
             onload:     function (response) {
                 var parser = new DOMParser();
                 var htmlDoc = parser.parseFromString(this.responseText,"text/html");
                 //console.log(htmlDoc.getElementsByTagName("article"));
                 //var link = xmlDoc.getElementsByTagName("item")[0].getElementsByTagName("link")[0].innerHTML;
-                createDiv(htmlDoc);
-
+                createDiv(htmlDoc,title);
+                callback();
             }
-        } );
+        });
+        // do callback when ready
     }
 
-}
-function createDiv(article){
+function createDiv(article,title){
     //console.log("CreateDiv");
-    //console.log(article);
-    var header =  article.getElementsByTagName("h2")[0].getElementsByTagName("a")[0].innerHTML;
+    console.log(title);
+    var add=""
+    if (title=="Deinupdate")add="DU"
+    else add="MR"
+    if (article.getElementsByTagName("h2")[0].classList.contains('site-title')){
+        var header =  article.getElementsByTagName("h1")[0].innerHTML;
+    }else{
+        var header =  article.getElementsByTagName("h2")[0].getElementsByTagName("a")[0].innerHTML;
+    }
     var textTree = article.getElementsByTagName("article")[0];
     var scripts = textTree.getElementsByTagName("script");
     var remScripts = [];
@@ -76,7 +131,7 @@ function createDiv(article){
         var index = remScripts-j;
         textTree.getElementsByTagName("script")[index].remove();
     }
-    textTree.getElementsByClassName("deinu-vor-dem-inhalt")[0].remove();
+    if (textTree.getElementsByClassName("deinu-vor-dem-inhalt").length > 0) textTree.getElementsByClassName("deinu-vor-dem-inhalt")[0].remove();
    //console.log("Check image Src");
     for (var k = 0; k<textTree.getElementsByTagName("img").length;k++){
         //console.log(textTree.getElementsByTagName("img")[k].src+": "+textTree.getElementsByTagName("img")[k].src.indexOf("deinupdate"));
@@ -85,21 +140,27 @@ function createDiv(article){
             textTree.getElementsByTagName("img")[k].srcset = textTree.getElementsByTagName("img")[k].srcset.replace("http:","https:");
         }
     }
+    for (var l = 0; l<textTree.getElementsByTagName("iframe").length;l++){
+        //console.log(textTree.getElementsByTagName("img")[k].src+": "+textTree.getElementsByTagName("img")[k].src.indexOf("deinupdate"));
+        var ratio = textTree.getElementsByTagName("iframe")[l].height/textTree.getElementsByTagName("iframe")[l].width
+        textTree.getElementsByTagName("iframe")[l].width = document.getElementsByClassName("menu")[0].offsetWidth
+        textTree.getElementsByTagName("iframe")[l].height = textTree.getElementsByTagName("iframe")[l].width * ratio
+    }
     //textTree.getElementById("vc-feelback-main").remove();
     var text = textTree.innerHTML;
     //console.log(header);
     //console.log(textTree);
     var container;
-    if (!$("#articleContainer").length){
+    if (!$("#articleContainer"+add).length){
         container = document.createElement("details")
-        container.id="articleContainer";
-        container.innerHTML += "<summary style='margin-top:20px;margin-bottom:20px'>DeinUpdate Artikel</summary>";
+        container.id="articleContainer"+add;
+        container.innerHTML += "<summary style='margin-top:20px;margin-bottom:20px'>"+title.replace(/ .*/,'')+" Artikel</summary>";
         //container.style = "display:none";
         var foo = $("#foo");
         foo.after(container);
         //addButton();
     }else{
-        container = $("#articleContainer")
+        container = $("#articleContainer"+add)
     }
     var articleDetails = document.createElement("details");
     articleDetails.classList.add("articleDetails");
@@ -108,6 +169,7 @@ function createDiv(article){
     container.append(articleDetails);
     var spacer = document.createElement("hr");
     container.append(spacer);
+    request=false;
 }
 function addButton(){
     //console.log("AddButton")
