@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Insert DU Artikel 31GG
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  News News News
 // @author       Anis Fencheltee
 // @match        https://31gg-31.tumblr.com/
@@ -183,6 +183,13 @@ function createDiv(article,title){
         textTree.getElementsByTagName("iframe")[l].width = document.getElementsByClassName("menu")[0].offsetWidth
         textTree.getElementsByTagName("iframe")[l].height = textTree.getElementsByTagName("iframe")[l].width * ratio
     }
+    for (l = 0; l<textTree.getElementsByTagName("img").length;l++){
+        //console.log(textTree.getElementsByTagName("img")[k].src+": "+textTree.getElementsByTagName("img")[k].src.indexOf("deinupdate"));
+        var ratioImg = textTree.getElementsByTagName("img")[l].height/textTree.getElementsByTagName("img")[l].width
+        textTree.getElementsByTagName("img")[l].width = document.getElementsByClassName("menu")[0].offsetWidth
+        textTree.getElementsByTagName("img")[l].height = textTree.getElementsByTagName("img")[l].width * ratioImg
+    }
+
     //textTree.getElementById("vc-feelback-main").remove();
     var text = textTree.innerHTML;
     //console.log(header);
