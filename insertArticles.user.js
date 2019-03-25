@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Insert DU Artikel 31GG
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  News News News
 // @author       Anis Fencheltee
 // @match        https://31gg-31.tumblr.com/
@@ -15,6 +15,7 @@ var x = 0;
 var anfrage = false;
 var request = false;
 (function() {
+    removeAds();
     var container1 = document.createElement("div")
     container1.id="articles";
     foo.after(container1);
@@ -226,7 +227,19 @@ function addButton(){
     credit2.append(button);
     $("#toggleArticle").click(function(){toggleArticle();});
 }
-
+function removeAds(){
+    setInterval(function(){
+        $(".w-top-left").remove();
+        $(".w-bottom-left").remove();
+        $(".w-top-left-mobile").remove();
+        console.log($("iframe")[0])
+        for(var i=0;i<$("iframe").length;i++){
+            if ($("iframe")[i].src.indexOf("disqusads")>-1){
+                $("iframe")[i].remove();
+            }
+        }
+    },50);
+}
 function toggleArticle(){
     //console.log("Click")
     $("#articleContainer").toggle();
