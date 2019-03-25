@@ -231,8 +231,7 @@ function removeAds(){
     setInterval(function(){
         $(".w-top-left").remove();
         $(".w-bottom-left").remove();
-        $(".w-top-left-mobile").remove();
-        console.log($("iframe")[0])
+        $(".w-top-left-mobile").remove();        
         for(var i=0;i<$("iframe").length;i++){
             if ($("iframe")[i].src.indexOf("disqusads")>-1){
                 $("iframe")[i].remove();
